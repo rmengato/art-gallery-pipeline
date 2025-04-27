@@ -22,12 +22,11 @@ services:
   kestra:
     image: kestra/kestra:latest
     pull_policy: always
-    # Note that this setup with a root user is intended for development purpose.
-    # Our base image runs without root, but the Docker Compose implementation needs root to access the Docker socket
     user: "root"
     command: server standalone
     volumes:
       - kestra-data:/app/storage
+      - ./kestra/flows:/app/storage/flows
       - /var/run/docker.sock:/var/run/docker.sock
       - /tmp/kestra-wd:/tmp/kestra-wd
     environment:
@@ -42,7 +41,7 @@ services:
           server:
             basicAuth:
               enabled: true
-              username: "${KESTRA_USERNAME}" # it must be a valid email address
+              username: "${KESTRA_USERNAME}"
               password: ${KESTRA_PASSWORD}
           repository:
             type: postgres
@@ -56,10 +55,17 @@ services:
             tmpDir:
               path: /tmp/kestra-wd/tmp
           url: http://localhost:8080/
-	  indexer:
-	    type: local
-	    local:
-	      flowPath: "/app/storage/flows"
+          indexer:
+            type: local
+            local:
+              flowPath: "/app/storage/flows"
+
+        micronaut:
+          io:
+            watch:
+              enabled: true
+              paths:
+                - /app/storage/flows
     ports:
       - "8080:8080"
       - "8081:8081"
