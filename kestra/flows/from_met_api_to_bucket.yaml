@@ -1,0 +1,169 @@
+id: from_met_api_to_bucket
+namespace: qr_art_gallery
+description: |
+  Extracts data from the Metropolitan Museum of NY API and loads it into GCS bucket
+
+inputs:
+  - id: all_departments
+    type: BOOLEAN
+    displayName: To get all departments, set to "true"
+    defaults: false
+    required: false
+
+
+variables:
+  file: "metropolitan_{{ execution.startDate | date('EEE') }}_{{ execution.startDate | date('yyyy-MM-dd') }}.parquet"
+  gcs_file: "gs://{{ kv('GCP_BUCKET_NAME') }}/{{ vars.file }}"
+  execution_time: "{{ execution.startDate }}"
+  data: "{{outputs.dept_iter_request.outputFiles['data.parquet']}}"
+
+
+
+tasks:
+    
+
+  - id: python_requests
+    type: io.kestra.plugin.core.flow.WorkingDirectory
+    tasks:
+      - id: dept_iter_request
+        type: io.kestra.plugin.scripts.python.Script
+        warningOnStdErr: false
+        taskRunner:
+          type: io.kestra.plugin.scripts.runner.docker.Docker
+        containerImage: ghcr.io/kestra-io/pydata:latest
+        beforeCommands:
+        - pip install pandas dlt httpx aiolimiter
+        outputFiles:
+          - data.parquet
+        
+        script: |
+          
+          import pandas as pd 
+          import numpy as np
+          
+          import time
+          import datetime
+          
+          import dlt
+          import httpx
+          from aiolimiter import AsyncLimiter
+          
+          import hashlib
+
+          current_time = datetime.datetime.utcnow()
+          weekday = current_time.weekday()
+
+          
+          df_request = pd.read_json(f"https://collectionapi.metmuseum.org/public/collection/v1/objects?departmentIds")
+          object_ids_list = df_request["objectIDs"].tolist()
+          objects_weekly_split = np.array_split(object_ids_list,7)
+          todays_objects = objects_weekly_split[weekday].tolist()
+
+          
+          limiter = AsyncLimiter(max_rate=70, time_period=1)
+
+          
+          @dlt.transformer
+          async def metropolitan_request(id):
+            async with limiter:
+              async with httpx.AsyncClient() as client:
+                  r = await client.get(f"https://collectionapi.metmuseum.org/public/collection/v1/objects/{id}")
+                  return r.json()
+
+          retrieved_data = list(todays_objects | metropolitan_request())
+
+        
+          pandas_df = pd.DataFrame(retrieved_data)
+          
+
+          
+          def row_to_md5(row):
+            row_str = '|'.join(str(v) for v in row.values)
+            return hashlib.md5(row_str.encode()).hexdigest()
+
+          pandas_df['md5ID'] = pandas_df.apply(row_to_md5, axis=1)
+
+          
+          numeric_columns = ['objectID', 'objectBeginDate', 'objectEndDate']
+          for col in numeric_columns:
+            if col in pandas_df.columns:
+                pandas_df[col] = pd.to_numeric(pandas_df[col], errors='coerce')
+
+          string_columns = [
+            'md5ID','accessionNumber', 'accessionYear', 'primaryImage', 'primaryImageSmall', 'additionalImages',
+            'constituents', 'department', 'objectName', 'title', 'culture', 'period', 'dynasty', 'reign',
+            'portfolio', 'artistRole', 'artistPrefix', 'artistDisplayName', 'artistDisplayBio', 'artistSuffix',
+            'artistAlphaSort', 'artistNationality', 'artistBeginDate', 'artistEndDate', 'artistGender',
+            'artistWikidata_URL', 'artistULAN_URL', 'objectDate', 'medium', 'dimensions', 'dimensionsParsed',
+            'measurements', 'creditLine', 'geographyType', 'city', 'state', 'county', 'country', 'region',
+            'subregion', 'locale', 'locus', 'excavation', 'river', 'classification', 'rightsAndReproduction',
+            'linkResource', 'metadataDate', 'repository', 'objectURL', 'tags', 'objectWikidata_URL',
+            'isTimelineWork', 'GalleryNumber'
+          ]
+          for col in string_columns:
+            if col in pandas_df.columns:
+                pandas_df[col] = pandas_df[col].astype(str)
+
+
+          pandas_df.to_parquet("data.parquet", engine="pyarrow", index=False)
+        
+                  
+  - id: upload_to_gcs
+    type: io.kestra.plugin.gcp.gcs.Upload
+    from: "{{render(vars.data)}}"
+    to: "{{render(vars.gcs_file)}}"
+
+
+  - id: purge_files
+    type: io.kestra.plugin.core.storage.PurgeCurrentExecutionFiles
+    description: To avoid cluttering your storage, we will remove the downloaded files
+
+
+pluginDefaults:
+  - type: io.kestra.plugin.gcp
+    values:
+      serviceAccount: "{{ kv('GCP_CREDS') }}"
+      projectId: "{{ kv('GCP_PROJECT_ID') }}"
+      location: "{{ kv('GCP_LOCATION') }}"
+      bucket: "{{ kv('GCP_BUCKET_NAME') }}"
+
+
+
+retry:
+  behavior: RETRY_FAILED_TASK    
+  type: exponential    
+  interval: PT30S
+  delayFactor: 2    
+  maxAttempt: 5    
+  maxInterval: PT10M    
+  warningOnRetry: true
+
+
+triggers:
+  - id: Monday
+    type: io.kestra.plugin.core.trigger.Schedule
+    cron: "0 0 * * 1"
+  
+  - id: Tuesday
+    type: io.kestra.plugin.core.trigger.Schedule
+    cron: "0 0 * * 2"
+  
+  - id: Wednesday
+    type: io.kestra.plugin.core.trigger.Schedule
+    cron: "0 0 * * 3"
+  
+  - id: Thursday
+    type: io.kestra.plugin.core.trigger.Schedule
+    cron: "0 0 * * 4"
+
+  - id: Friday
+    type: io.kestra.plugin.core.trigger.Schedule
+    cron: "0 0 * * 5"
+
+  - id: Saturday
+    type: io.kestra.plugin.core.trigger.Schedule
+    cron: "0 0 * * 6"
+
+  - id: Sunday
+    type: io.kestra.plugin.core.trigger.Schedule
+    cron: "0 0 * * 7"
