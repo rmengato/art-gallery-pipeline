@@ -13,6 +13,10 @@ For those who eventually stumble upon this repository and are not aware, the Dat
 
 ## For those evaluating
 
+### Dashboard
+
+[Link for Google Looker Dashboard](https://lookerstudio.google.com/s/gbIubNR08nQ)
+
 ### Setup
 
 Designed to be easy to assemble, download the repository, create a file called ".env" on the folder, with the structure of the file ".env.example", available on this repo.
