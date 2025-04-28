@@ -26,10 +26,8 @@ services:
     command: server standalone
     volumes:
       - kestra-data:/app/storage
-      - ./kestra/flows:/app/storage/flows
       - /var/run/docker.sock:/var/run/docker.sock
       - /tmp/kestra-wd:/tmp/kestra-wd
-      - ${ART_GALLERY_PIPELINE_PATH}/kestra/flows/qr_art_gallery:/app/storage/flows
     environment:
       KESTRA_CONFIGURATION: |
         datasources:
@@ -56,12 +54,6 @@ services:
             tmpDir:
               path: /tmp/kestra-wd/tmp
           url: http://localhost:8080/
-        micronaut:
-          io:
-            watch:
-              enabled: true
-              paths:
-                - /app/storage/flows
     ports:
       - "8080:8080"
       - "8081:8081"
@@ -81,6 +73,7 @@ services:
       KESTRA_PASSWORD: "${KESTRA_PASSWORD}"
     entrypoint: >
       /bin/sh -c "
+        sleep 20 &&
         terraform init &&
         terraform apply -auto-approve
       "
