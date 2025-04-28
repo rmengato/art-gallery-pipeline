@@ -71,13 +71,19 @@ The chosen Dataset will be obtained from the [Metropolitan Museum of Art API](ht
         4 points: Instructions are clear, it's easy to run the code, and the code works
 
 
-### Terraform for cloud configuration
+### Terraform 
+
+#### For cloud configuration
 
 Terraform was used for configuration of the cloud resources in Google Cloud. Terraform is a IaC (Infrastructure as code) platform, which allows the user to design, setup, update and ultimately, destroy resources within the cloud. 
 
 IaC is highly desirable, as it enables developers in important aspects such as more control of resources in the cloud, which in the end, translates into financial costs. But apart from this, it allows for consistency among different resources, speed when setting up, ease of management of these resources and versioning. This might be only scratching the surface, but the point is made.
 
 In this project, Terraform was used to setup the bucket (qr_art_gallery) and two BigQuery Datasets (or schemas, in other Data Warehouses), qr_art_gallery_raw and qr_art_gallery_transformed, where the former will hold tabular raw data, and the latter will hold transformed data.
+
+#### For deployment
+
+Terraform has a Kestra interface. This makes deployment easy. Using Terraform was the best solution I've found for getting each workflow ready to execute in the new environment created by the Docker Compose. 
 
 ### Kestra for orchestration
 
