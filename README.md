@@ -124,11 +124,19 @@ This is a manyfold improvement, so large that it had even to be limited, as on t
 
 The Python script that handles the extraction from the MET API phase is triggered by Kestra, where a task that creates a docker container with Python is setup. 
 
+### Staging datasets, for handling Raw Data
+
+Two datasets were created, one for Raw Data, and another for Transformed Data.
+
+After ingestion, data stored within a Bucket, meant for unstructured data. This data then structured in BigQuery in the form of a dataset. It's data types are defined, a timestamp is added. For ease of future use, this data, ingested from the MET Api without any theme differentiation, is separated into thematic tables. Columns regarding information about the artist, for instance, can be stored in a different place than informations about when MET has first gotten the artwork in their collection, which is an adminstrative information.
+
+Data is partitioned by department, for increase Query efficiency.
+
 ### Transformations
 
 Approaching the final stages of the pipeline, transformations are made both with DBT and the Python Pandas Library. Python was necessary for its larger scope. The library qrcode was installed, and with it a QR code could be generated for each object.
 
-The QR Code is generated on the last step of the flow, and it is stored in a bucket on the cloud. By using other visualization tools, such as streamlit, for instance, it would be possible to have a object within the dashboard that downloads the QR code.
+The QR Code is generated on the last step of the flow, and it is stored in a bucket on the cloud. By using other visualization tools, such as streamlit, for instance, it would be possible to have a object within the dashboard that downloads the QR code and displays it. Another possibility is having the bucket have public access. This would speed up this kind of visualization.
 
 ![qr_codes_1076](https://github.com/user-attachments/assets/1f43660a-79af-44e8-b61c-f73f25edf2e3)
 
