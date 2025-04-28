@@ -68,3 +68,21 @@ services:
     depends_on:
       postgres:
          condition: service_started
+
+  flow-deployer:
+    image: hashicorp/terraform:latest
+    container_name: flow-deployer
+    working_dir: /workspace
+    volumes:
+      - ./terraform:/workspace
+    environment:
+      KESTRA_URL: "http://kestra:8080"
+      KESTRA_USERNAME: "${KESTRA_USERNAME}"
+      KESTRA_PASSWORD: "${KESTRA_PASSWORD}"
+    entrypoint: >
+      /bin/sh -c "
+        terraform init &&
+        terraform apply -auto-approve
+      "
+    depends_on:
+      - kestra
