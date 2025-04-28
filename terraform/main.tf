@@ -29,11 +29,6 @@ resource "kestra_flow" "from_staging_to_transformed" {
 }
 
 
-resource "kestra_kv" "gcp_creds" {
-  namespace = "qr_art_gallery"
-  key       = "GCP_CREDS"
-  value     = var.gcp_creds
-}
 
 resource "kestra_kv" "gcp_project_id" {
   namespace = "qr_art_gallery"

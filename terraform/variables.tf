@@ -1,8 +1,4 @@
-variable "gcp_creds" {
-  description = "GCP service account key (JSON)"
-  type        = string
-  sensitive   = true
-}
+
 
 variable "gcp_project_id" {
   description = "GCP project ID"
