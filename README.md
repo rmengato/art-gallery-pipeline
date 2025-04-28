@@ -4,7 +4,11 @@
 
 This repo aims to create an OLAP Database with data on art pieces from the Metropolitan Museum of Art, but also include QR codes for a link with further details on each art piece. With this, it will be possible to use the dashboard in classrooms for art or history of art studies, but also allow students to access the art piece's link easily and in a fast manner, in order to see each piece up close, with high definition details, if they wish to.
 
-The concept of generating QR codes can also be used in other contexts, such as in corporate meetings, for instance. The use of images are already widespread, such as Powerpoint presentations. But more often than not, people might need to access a link. Simply placing a QR code on the screen when needed, might avoid many e-mail unnecessary exchanges, such as "can you please send me the link for that?", as well as diminishing the cognitive load of the presenter that has to remember which links to send to whom. Should you take a look at this Jira ticket, Google Spreadheet or a company Pdf? There it is, don't need to waste time looking for it. You can concentrate on what is being presented.
+The concept of generating QR codes can also be used in other contexts, such as in corporate meetings, for instance. Of course this concept already exists, but it is generally underused. The use of images are already widespread, such as Powerpoint presentations. But more often than not, people might need to access a link. Simply placing a QR code on the screen when needed, might avoid many e-mail unnecessary exchanges, such as "can you please send me the link for that?", as well as diminishing the cognitive load of the presenter that has to remember which links to send to whom. Should you take a look at this Jira ticket, Google Spreadheet or a company Pdf? There it is, don't need to waste time looking for it. You can concentrate on what is being presented.
+
+This pipeline also generates clusters for color analysis, by using [K-means clustering](https://en.wikipedia.org/wiki/K-means_clustering).
+
+Also, a table with the lifetime of each artist, including each year (including "idle" years), and their works (and duration of creation) that are now on the MET. This could lead to very informative timeline visualizations, and this concept can be directly translated into corporate environments. Instead of paintings and how long they took to be done, think of a timeline visualization with squares representing each week of an employee, with colors changing according to their occupancy. Unfortunately, generating this visualization would risk my already late submission, so this will be done in the future.
 
 ### DataTalks.Club Zoomcamp
 This is my iteration of the final project propposed by the organizers of the Data Engineering Zoomcamp.
@@ -124,13 +128,13 @@ This is a manyfold improvement, so large that it had even to be limited, as on t
 
 The Python script that handles the extraction from the MET API phase is triggered by Kestra, where a task that creates a docker container with Python is setup. 
 
-### Staging datasets, for handling Raw Data
+### "Staging" datasets, for handling Raw Data
 
 Two datasets were created, one for Raw Data, and another for Transformed Data.
 
 After ingestion, data stored within a Bucket, meant for unstructured data. This data then structured in BigQuery in the form of a dataset. It's data types are defined, a timestamp is added. For ease of future use, this data, ingested from the MET Api without any theme differentiation, is separated into thematic tables. Columns regarding information about the artist, for instance, can be stored in a different place than informations about when MET has first gotten the artwork in their collection, which is an adminstrative information.
 
-Data is partitioned by department, for increase Query efficiency.
+Data is partitioned by department, for increased Query efficiency.
 
 ### Transformations
 
@@ -138,11 +142,15 @@ Approaching the final stages of the pipeline, transformations are made both with
 
 The QR Code is generated on the last step of the flow, and it is stored in a bucket on the cloud. By using other visualization tools, such as streamlit, for instance, it would be possible to have a object within the dashboard that downloads the QR code and displays it. Another possibility is having the bucket have public access. This would speed up this kind of visualization.
 
-![qr_codes_1076](https://github.com/user-attachments/assets/1f43660a-79af-44e8-b61c-f73f25edf2e3)
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/1f43660a-79af-44e8-b61c-f73f25edf2e3">
+</p>
 
 Other part of the flow generates clusters in order to perform a color analysis. Again, in more potent visualization tools, a timeline of the colors could be visualized. Imagine being able to answer questions such as: was there any changes on the colors of paintings during wars? Maybe different cultures have different color preferences, maybe because their technologies? Many interesting questions can be raised and visualized.
 
-Clustering had to be optimized for efficiency. MiniBactch K-means was chosen, as it is generally faster than simple K-means. Async downloads were also used, for speed. The images must be downloaded, their pixels are turned into a numpy array with the colors. K-means, set for creating 5 clusters is then performed. The centroids are stored, the abolute number of pixels in each cluster and their relative proportion is stored in a dataframe, which in its turn, is stored in BigQuery. 
+Clustering had to be optimized for efficiency. MiniBactch K-means was chosen, as it is generally faster than pure K-means. Async downloads were also used, for speed. The images must be downloaded, their pixels are turned into a numpy array with the colors. K-means, set for creating 5 clusters is then performed. The centroids are stored, the abolute number of pixels in each cluster and their relative proportion is stored in a dataframe, which in its turn, is stored in BigQuery. As of the moment of the submission, the clustering was made with RGB values, but there are other ways of representing color, which may be best for the human eye perception, such as [L\*a\*b](https://en.wikipedia.org/wiki/CIELAB_color_space). For displaying in screens, the colors are better in if in RGB, so they should be converted back to RGB for visualization after clustering.
+
+All other transformations are performed by DBT. These transformations that are more SQL based benefit from this tool. If I understood correctly, despite having a Python Module, its transformations are not done within the warehouse, so I wonder if there is much benefit for python in DBT as is. Back to the transformations, an example of a generated table is the "Artists biography". In it, the range between each artists birth year and the death year are turned into an array, e.g.:\[1853,1854...1889\] and then is unnested, that is, every object within the array has now its own line in the table. The same can be done with every artists artwort. The result is a line for every year, and which artworks took place in each year of the artists life. This can be easily translated into a corporate environment for visualizations for project management (think of every painting as a project), for instance, or human resources (rate of ocupation of each person).   
 
 
 
