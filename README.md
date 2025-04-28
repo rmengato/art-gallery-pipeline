@@ -58,24 +58,6 @@ Transformations: **DBT + some Python Pandas when necessary**
 
 The chosen Dataset will be obtained from the [Metropolitan Museum of Art API](https://metmuseum.github.io/).
 
-
-    Problem description
-        4 points: Problem is well described and it's clear what the problem the project solves
-    Cloud
-        4 points: The project is developed in the cloud and IaC tools are used
-    Data ingestion (choose either batch or stream)
-        Batch / Workflow orchestration
-            4 points: End-to-end pipeline: multiple steps in the DAG, uploading data to data lake
-    Data warehouse
-        4 points: Tables are partitioned and clustered in a way that makes sense for the upstream queries (with explanation)
-    Transformations (dbt, spark, etc)
-        4 points: Tranformations are defined with dbt, Spark or similar technologies
-    Dashboard
-        4 points: A dashboard with 2 tiles
-    Reproducibility
-        4 points: Instructions are clear, it's easy to run the code, and the code works
-
-
 ### Terraform 
 
 #### For cloud configuration
@@ -145,6 +127,15 @@ The Python script that handles the extraction from the MET API phase is triggere
 ### Transformations
 
 Approaching the final stages of the pipeline, transformations are made both with DBT and the Python Pandas Library. Python was necessary for its larger scope. The library qrcode was installed, and with it a QR code could be generated for each object.
+
+The QR Code is generated on the last step of the flow, and it is stored in a bucket on the cloud. By using other visualization tools, such as streamlit, for instance, it would be possible to have a object within the dashboard that downloads the QR code.
+
+![qr_codes_1076](https://github.com/user-attachments/assets/1f43660a-79af-44e8-b61c-f73f25edf2e3)
+
+Other part of the flow generates clusters in order to perform a color analysis. Again, in more potent visualization tools, a timeline of the colors could be visualized. Imagine being able to answer questions such as: was there any changes on the colors of paintings during wars? Maybe different cultures have different color preferences, maybe because their technologies? Many interesting questions can be raised and visualized.
+
+Clustering had to be optimized for efficiency. MiniBactch K-means was chosen, as it is generally faster than simple K-means. Async downloads were also used, for speed. The images must be downloaded, their pixels are turned into a numpy array with the colors. K-means, set for creating 5 clusters is then performed. The centroids are stored, the abolute number of pixels in each cluster and their relative proportion is stored in a dataframe, which in its turn, is stored in BigQuery. 
+
 
 
 
