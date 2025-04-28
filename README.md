@@ -22,6 +22,7 @@ For those who eventually stumble upon this repository and are not aware, the Dat
 Designed to be easy to assemble, download the repository, create a file called ".env" on the folder, with the structure of the file ".env.example", available on this repo.
 
 - Download the repo
+- Update the .env file, on the likings of the .env.example file, save it.
 - On the folder, a simple ```[sudo] docker compose up --build``` will start the Docker Compose.
 
 
