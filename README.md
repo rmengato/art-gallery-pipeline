@@ -52,11 +52,9 @@ Cloud Storage and Data Warehouse: **Google Cloud** and **Google BigQuery**, resp
 
 **Ingestion**: dlt
 
-Transformations: **DBT + some Python Pandas when necessary**
+Transformations: **DBT + some Python and Pandas when necessary**
 
-
-![data_museum drawio](https://github.com/user-attachments/assets/1126d6d6-b96b-4326-ba56-a2a02e85f8a4)
-
+![museum_pipeline drawio](https://github.com/user-attachments/assets/62c6c7bf-1888-4d9b-94dc-bb419567a0bd)
 
 ### Chosen Datasets
 
@@ -67,6 +65,7 @@ The chosen Dataset will be obtained from the [Metropolitan Museum of Art API](ht
 #### For cloud configuration
 
 Terraform was used for configuration of the cloud resources in Google Cloud. Terraform is a IaC (Infrastructure as code) platform, which allows the user to design, setup, update and ultimately, destroy resources within the cloud. 
+
 
 IaC is highly desirable, as it enables developers in important aspects such as more control of resources in the cloud, which in the end, translates into financial costs. But apart from this, it allows for consistency among different resources, speed when setting up, ease of management of these resources and versioning. This might be only scratching the surface, but the point is made.
 
@@ -152,6 +151,8 @@ Clustering had to be optimized for efficiency. MiniBactch K-means was chosen, as
 
 All other transformations are performed by DBT. These transformations that are more SQL based benefit from this tool. If I understood correctly, despite having a Python Module, its transformations are not done within the warehouse, so I wonder if there is much benefit for python in DBT as is. Back to the transformations, an example of a generated table is the "Artists biography". In it, the range between each artists birth year and the death year are turned into an array, e.g.:\[1853,1854...1889\] and then is unnested, that is, every object within the array has now its own line in the table. The same can be done with every artists artwort. The result is a line for every year, and which artworks took place in each year of the artists life. This can be easily translated into a corporate environment for visualizations for project management (think of every painting as a project), for instance, or human resources (rate of ocupation of each person).   
 
+## Conclusion
 
+All in all, the bootcamp was an amazing experience and it is hard to put into words how much I've learned. Thanks to my peers, but above all, the instructors.
 
-
+Feel free to connect with me on [Linkedin](https://tinyurl.com/ms2tvs7f)
