@@ -1,0 +1,51 @@
+version: 2
+
+sources:
+  - name: qr_art_gallery_raw
+    description: "Landing tables from the Metropolitan Museum pipeline"
+    database: de-zoomcamp-rmengato
+    schema: qr_art_gallery_raw
+
+    tables:
+      - name: staging_metropolitan
+        description: "Raw Met data from GCS via Kestra"
+        columns:
+          - name: objectID
+            description: "Unique object identifier"
+            tests:
+              - not_null
+
+      - name: staging_metropolitan_images
+        description: "Image data from MET"
+        columns:
+          - name: objectID
+            description: "Unique object identifier"
+            tests:
+              - not_null
+            
+
+
+models:
+
+      
+
+      - name: artists_years
+        description: Artist start and end years, filtered
+        columns:
+          - name: artistDisplayName
+            tests: [not_null]
+          - name: begin_year
+          - name: end_year
+
+      - name: artwork_years
+        description: One row per artwork per its conception/production year
+        columns:
+          - name: objectID
+          - name: year
+
+      - name: dim_metropolitan_artists
+        description: ensures that there are no duplitates in staging_metropolitan_artists
+        columns:
+          - name: artistDisplayName
+            tests: [not_null]
+

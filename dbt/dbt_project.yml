@@ -1,0 +1,28 @@
+name: "qr_art_gallery"
+version: "1.0.0"
+config-version: 2
+
+profile: my-dbt-project
+
+# Paths
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+# Targets
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  de-zoomcamp-rmengato:
+    staging:
+      +materialized: view
+      +schema: qr_art_gallery_raw
+    analytics:
+      +materialized: table
+      +schema: qr_art_gallery_transformed

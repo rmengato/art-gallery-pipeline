@@ -1,0 +1,9 @@
+version: 2
+
+models:
+  - name: fct_artist_year_artworks
+    description: Exploded artist-year rows joined with artworks created that year
+    columns:
+      - name: artistDisplayName
+      - name: year
+      - name: artwork_title
