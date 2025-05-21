@@ -17,9 +17,6 @@ For those who eventually stumble upon this repository and are not aware, the Dat
 
 ## For those evaluating
 
-### Dashboard
-
-[Link for Google Looker Dashboard](https://lookerstudio.google.com/s/gbIubNR08nQ)
 
 ### Setup
 
